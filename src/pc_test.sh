@@ -1,3 +1,8 @@
+## 2d object detection
 python demo.py ctdet --demo /mnt/share/valetpark/Rec20190328120637/FrontCamera --load_model ../models/ctdet_coco_dla_2x.pth
 
+## multi-pose
 # python demo.py multi_pose --demo webcam --load_model ../models/multi_pose_dla_3x.pth
+
+## 3d object detection
+# python demo.py ddd --demo /mnt/share/valetpark/Rec20190328120637/FrontCamera --load_model ../models/ddd_3dop.pth

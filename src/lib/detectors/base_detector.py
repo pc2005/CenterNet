@@ -32,7 +32,7 @@ class BaseDetector(object):
     self.num_classes = opt.num_classes
     self.scales = opt.test_scales
     self.opt = opt
-    self.pause = False #True
+    self.pause = True # pause each frame
 
   def pre_process(self, image, scale, meta=None):
     height, width = image.shape[0:2]

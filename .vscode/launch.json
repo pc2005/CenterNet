@@ -1,0 +1,55 @@
+{
+    // Use IntelliSense to learn about possible attributes.
+    // Hover to view descriptions of existing attributes.
+    // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "2D Det",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/demo.py",
+            "args": [
+                "ctdet",
+                "--demo",
+                "/media/pc2005/Samsung_1TB/data/valetpark/Rec20190328120637/FrontCamera",
+                "--load_model",
+                "./models/ctdet_coco_dla_2x.pth",
+                "--debug",
+                "2"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Multi-pose",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/demo.py",
+            "args": [
+                "multi_pose",
+                "--demo",
+                "webcam",
+                "--load_model",
+                "../models/multi_pose_dla_3x.pth"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "3D Det",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/demo.py",
+            "args": [
+                "ddd",
+                "--demo",
+                "/mnt/DAT_DATA_001/datasets/Kitti/data_semantics/testing/image_2",
+                "--load_model",
+                "../models/ddd_3dop.pth"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

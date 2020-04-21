@@ -19,7 +19,7 @@
             "args": [
                 "ctdet",
                 "--demo",
-                "/media/pc2005/Samsung_1TB/data/valetpark/Rec20190328120637/FrontCamera",
+                "/media/pc2005/Samsung_1TB1/data/valetpark/Rec20190328120637/FrontCamera",
                 "--load_model",
                 "./models/ctdet_coco_dla_2x.pth",
                 "--debug",
@@ -61,7 +61,7 @@
             "cwd": "${workspaceFolder}"
         },
         {
-            "name": "Trainer",
+            "name": "2D Trainer",
             "type": "python",
             "request": "launch",
             "program": "${workspaceFolder}/src/main.py",
@@ -70,7 +70,28 @@
                 "--exp_id",
                 "coco_dla",
                 "--batch_size",
-                "32",
+                "8",
+                "--master_batch",
+                "15",
+                "--lr",
+                "1.25e-4",
+                "--gpus",
+                "0"
+            ],
+            "console": "integratedTerminal",
+            "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "3D Trainer",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/src/main.py",
+            "args": [
+                "ddd",
+                "--exp_id",
+                "coco_dla",
+                "--batch_size",
+                "8",
                 "--master_batch",
                 "15",
                 "--lr",

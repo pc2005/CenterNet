@@ -442,7 +442,11 @@ class DLASeg(nn.Module):
         assert down_ratio in [2, 4, 8, 16]
         self.first_level = int(np.log2(down_ratio))
         self.last_level = last_level
+        
+        # build backbone net
         self.base = globals()[base_name](pretrained=pretrained)
+        
+        # ! build decoders?
         channels = self.base.channels
         scales = [2 ** i for i in range(len(channels[self.first_level:]))]
         self.dla_up = DLAUp(
@@ -454,6 +458,7 @@ class DLASeg(nn.Module):
         self.ida_up = IDAUp(out_channel, channels[self.first_level:self.last_level],
                             [2 ** i for i in range(self.last_level - self.first_level)])
 
+        # construct FC layers to regress each head
         self.heads = heads
         for head in self.heads:
             classes = self.heads[head]
@@ -465,18 +470,16 @@ class DLASeg(nn.Module):
                   nn.Conv2d(head_conv, classes,
                             kernel_size=final_kernel, stride=1,
                             padding=final_kernel // 2, bias=True))
-              if 'hm' in head:
-                fc[-1].bias.data.fill_(-2.19)
-              else:
-                fill_fc_weights(fc)
             else:
               fc = nn.Conv2d(channels[self.first_level], classes,
                              kernel_size=final_kernel, stride=1,
                              padding=final_kernel // 2, bias=True)
-              if 'hm' in head:
-                fc.bias.data.fill_(-2.19)
-              else:
-                fill_fc_weights(fc)
+            
+            if 'hm' in head:
+                fc[-1].bias.data.fill_(-2.19) #! init bias with uniform value?
+            else:
+                fill_fc_weights(fc) # init weights 
+
             self.__setattr__(head, fc)
 
     def forward(self, x):

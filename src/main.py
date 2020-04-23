@@ -79,7 +79,7 @@ def main(opt):
   best = 1e10
   for epoch in range(start_epoch + 1, opt.num_epochs + 1):
     mark = epoch if opt.save_all else 'last'
-    log_dict_train, _ = trainer.train(epoch, train_loader)
+    log_dict_train, _ = trainer.train(epoch, train_loader)  # epoch training
     logger.write('epoch: {} |'.format(epoch))
 
     for k, v in log_dict_train.items():
@@ -106,11 +106,16 @@ def main(opt):
 
     logger.write('\n')
 
+    # step-down lr
     if epoch in opt.lr_step:
       save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(epoch)),
                  epoch, model, optimizer)
+
+      # scale-down lr
       lr = opt.lr * (0.1 ** (opt.lr_step.index(epoch) + 1))
       print('Drop LR to', lr)
+
+      # update lr
       for param_group in optimizer.param_groups:
           param_group['lr'] = lr
 

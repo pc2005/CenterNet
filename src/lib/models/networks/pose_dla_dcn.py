@@ -446,7 +446,7 @@ class DLASeg(nn.Module):
         # build backbone net
         self.base = globals()[base_name](pretrained=pretrained)
         
-        # ! build decoders?
+        # ! build decoder layers?
         channels = self.base.channels
         scales = [2 ** i for i in range(len(channels[self.first_level:]))]
         self.dla_up = DLAUp(
@@ -476,9 +476,9 @@ class DLASeg(nn.Module):
                              padding=final_kernel // 2, bias=True)
             
             if 'hm' in head:
-                fc[-1].bias.data.fill_(-2.19) #! init bias with uniform value?
+                fc[-1].bias.data.fill_(-2.19)   #! init bias of last Conv2d layer with magic value?
             else:
-                fill_fc_weights(fc) # init weights 
+                fill_fc_weights(fc)             # init bias in Conv2d layers to 0 
 
             self.__setattr__(head, fc)
 

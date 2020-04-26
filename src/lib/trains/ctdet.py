@@ -17,12 +17,16 @@ from .base_trainer import BaseTrainer
 class CtdetLoss(torch.nn.Module):
   def __init__(self, opt):
     super(CtdetLoss, self).__init__()
+    
     self.crit = torch.nn.MSELoss() if opt.mse_loss else FocalLoss()
+    
     self.crit_reg = RegL1Loss() if opt.reg_loss == 'l1' else \
               RegLoss() if opt.reg_loss == 'sl1' else None
+    
     self.crit_wh = torch.nn.L1Loss(reduction='sum') if opt.dense_wh else \
               NormRegL1Loss() if opt.norm_wh else \
               RegWeightedL1Loss() if opt.cat_spec_wh else self.crit_reg
+    
     self.opt = opt
 
   def forward(self, outputs, batch):
@@ -30,16 +34,19 @@ class CtdetLoss(torch.nn.Module):
     hm_loss, wh_loss, off_loss = 0, 0, 0
     for s in range(opt.num_stacks):
       output = outputs[s]
+      
       if not opt.mse_loss:
         output['hm'] = _sigmoid(output['hm'])
 
       if opt.eval_oracle_hm:
         output['hm'] = batch['hm']
+      
       if opt.eval_oracle_wh:
         output['wh'] = torch.from_numpy(gen_oracle_map(
           batch['wh'].detach().cpu().numpy(), 
           batch['ind'].detach().cpu().numpy(), 
           output['wh'].shape[3], output['wh'].shape[2])).to(opt.device)
+      
       if opt.eval_oracle_offset:
         output['reg'] = torch.from_numpy(gen_oracle_map(
           batch['reg'].detach().cpu().numpy(), 
@@ -47,6 +54,7 @@ class CtdetLoss(torch.nn.Module):
           output['reg'].shape[3], output['reg'].shape[2])).to(opt.device)
 
       hm_loss += self.crit(output['hm'], batch['hm']) / opt.num_stacks
+      
       if opt.wh_weight > 0:
         if opt.dense_wh:
           mask_weight = batch['dense_wh_mask'].sum() + 1e-4
@@ -66,11 +74,15 @@ class CtdetLoss(torch.nn.Module):
       if opt.reg_offset and opt.off_weight > 0:
         off_loss += self.crit_reg(output['reg'], batch['reg_mask'],
                              batch['ind'], batch['reg']) / opt.num_stacks
-        
+
+    # weighted loss    
     loss = opt.hm_weight * hm_loss + opt.wh_weight * wh_loss + \
            opt.off_weight * off_loss
+    
+    # construct loss dictionary
     loss_stats = {'loss': loss, 'hm_loss': hm_loss,
                   'wh_loss': wh_loss, 'off_loss': off_loss}
+    
     return loss, loss_stats
 
 class CtdetTrainer(BaseTrainer):
@@ -92,9 +104,11 @@ class CtdetTrainer(BaseTrainer):
     dets[:, :, :4] *= opt.down_ratio
     dets_gt = batch['meta']['gt_det'].numpy().reshape(1, -1, dets.shape[2])
     dets_gt[:, :, :4] *= opt.down_ratio
+    
     for i in range(1):
       debugger = Debugger(
         dataset=opt.dataset, ipynb=(opt.debug==3), theme=opt.debugger_theme)
+      
       img = batch['input'][i].detach().cpu().numpy().transpose(1, 2, 0)
       img = np.clip(((
         img * opt.std + opt.mean) * 255.), 0, 255).astype(np.uint8)
@@ -103,12 +117,14 @@ class CtdetTrainer(BaseTrainer):
       debugger.add_blend_img(img, pred, 'pred_hm')
       debugger.add_blend_img(img, gt, 'gt_hm')
       debugger.add_img(img, img_id='out_pred')
+      
       for k in range(len(dets[i])):
         if dets[i, k, 4] > opt.center_thresh:
           debugger.add_coco_bbox(dets[i, k, :4], dets[i, k, -1],
                                  dets[i, k, 4], img_id='out_pred')
 
       debugger.add_img(img, img_id='out_gt')
+      
       for k in range(len(dets_gt[i])):
         if dets_gt[i, k, 4] > opt.center_thresh:
           debugger.add_coco_bbox(dets_gt[i, k, :4], dets_gt[i, k, -1],
@@ -117,7 +133,7 @@ class CtdetTrainer(BaseTrainer):
       if opt.debug == 4:
         debugger.save_all_imgs(opt.debug_dir, prefix='{}'.format(iter_id))
       else:
-        debugger.show_all_imgs(pause=True)
+        debugger.show_all_imgs(pause=False)
 
   def save_result(self, output, batch, results):
     reg = output['reg'] if self.opt.reg_offset else None

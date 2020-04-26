@@ -34,7 +34,7 @@ def main(opt):
   os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
   opt.device = torch.device('cuda' if opt.gpus[0] >= 0 else 'cpu')
 
-  ## Create model
+  ## ! Create model (dig-in)
   print('Creating model...')
   model = create_model(opt.arch, opt.heads, opt.head_conv)
   optimizer = torch.optim.Adam(model.parameters(), opt.lr)
@@ -43,6 +43,7 @@ def main(opt):
     model, optimizer, start_epoch = load_model(
         model, opt.load_model, optimizer, opt.resume, opt.lr, opt.lr_step)
 
+  ## ! Init trainer class (dig-in)
   Trainer = train_factory[opt.task]
   trainer = Trainer(opt, model, optimizer)
   trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)
@@ -64,7 +65,7 @@ def main(opt):
     val_loader.dataset.run_eval(preds, opt.save_dir)
     return
 
-  # training data
+  # training data loader
   train_loader = torch.utils.data.DataLoader(
       Dataset(opt, 'train'),
       batch_size=opt.batch_size,
@@ -90,8 +91,9 @@ def main(opt):
       logger.scalar_summary('train_{}'.format(k), v, epoch)
       logger.write('{} {:8f} | '.format(k, v))
 
-    # model saving logics
+    # model validation and saving logics
     if opt.val_intervals > 0 and epoch % opt.val_intervals == 0:
+      
       # save checkpoing model
       save_model(os.path.join(opt.save_dir, 'model_{}.pth'.format(mark)),
                  epoch, model, optimizer)

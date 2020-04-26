@@ -76,7 +76,11 @@
                 "--lr",
                 "1.25e-4",
                 "--gpus",
-                "0"
+                "0",
+                "--debug",      // for debug
+                "2",
+                "--num_iters",  // for debug
+                "100"     
             ],
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}"

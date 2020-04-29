@@ -18,11 +18,14 @@ class CtdetLoss(torch.nn.Module):
   def __init__(self, opt):
     super(CtdetLoss, self).__init__()
     
+    # hm loss criteria
     self.crit = torch.nn.MSELoss() if opt.mse_loss else FocalLoss()
     
+    # reg loss criteria
     self.crit_reg = RegL1Loss() if opt.reg_loss == 'l1' else \
               RegLoss() if opt.reg_loss == 'sl1' else None
     
+    # size loss criteria
     self.crit_wh = torch.nn.L1Loss(reduction='sum') if opt.dense_wh else \
               NormRegL1Loss() if opt.norm_wh else \
               RegWeightedL1Loss() if opt.cat_spec_wh else self.crit_reg
@@ -30,14 +33,19 @@ class CtdetLoss(torch.nn.Module):
     self.opt = opt
 
   def forward(self, outputs, batch):
+    
     opt = self.opt
     hm_loss, wh_loss, off_loss = 0, 0, 0
-    for s in range(opt.num_stacks):
+
+    for s in range(opt.num_stacks):      
+      # extract outputs for loss calculation
       output = outputs[s]
-      
+
+      # ! pc: why sigmoid?  
       if not opt.mse_loss:
         output['hm'] = _sigmoid(output['hm'])
 
+      # ? evaluate groundtruth
       if opt.eval_oracle_hm:
         output['hm'] = batch['hm']
       
@@ -53,8 +61,10 @@ class CtdetLoss(torch.nn.Module):
           batch['ind'].detach().cpu().numpy(), 
           output['reg'].shape[3], output['reg'].shape[2])).to(opt.device)
 
+      # calculate hm loss
       hm_loss += self.crit(output['hm'], batch['hm']) / opt.num_stacks
       
+      # calculate size loss
       if opt.wh_weight > 0:
         if opt.dense_wh:
           mask_weight = batch['dense_wh_mask'].sum() + 1e-4
@@ -71,13 +81,15 @@ class CtdetLoss(torch.nn.Module):
             output['wh'], batch['reg_mask'],
             batch['ind'], batch['wh']) / opt.num_stacks
       
+      # calculate off-center loss
       if opt.reg_offset and opt.off_weight > 0:
         off_loss += self.crit_reg(output['reg'], batch['reg_mask'],
                              batch['ind'], batch['reg']) / opt.num_stacks
 
-    # weighted loss    
-    loss = opt.hm_weight * hm_loss + opt.wh_weight * wh_loss + \
-           opt.off_weight * off_loss
+    # weighted overall loss
+    loss = opt.hm_weight * hm_loss + \
+        opt.wh_weight * wh_loss + \
+        opt.off_weight * off_loss
     
     # construct loss dictionary
     loss_stats = {'loss': loss, 'hm_loss': hm_loss,
@@ -90,6 +102,15 @@ class CtdetTrainer(BaseTrainer):
     super(CtdetTrainer, self).__init__(opt, model, optimizer=optimizer)
   
   def _get_losses(self, opt):
+    """[summary]
+
+    Arguments:
+        opt {obj} -- options object
+
+    Returns:
+        loss_states[list] -- names of losses
+        loss[obj] -- object of losses
+    """
     loss_states = ['loss', 'hm_loss', 'wh_loss', 'off_loss']
     loss = CtdetLoss(opt)
     return loss_states, loss
@@ -114,6 +135,7 @@ class CtdetTrainer(BaseTrainer):
         img * opt.std + opt.mean) * 255.), 0, 255).astype(np.uint8)
       pred = debugger.gen_colormap(output['hm'][i].detach().cpu().numpy())
       gt = debugger.gen_colormap(batch['hm'][i].detach().cpu().numpy())
+      
       debugger.add_blend_img(img, pred, 'pred_hm')
       debugger.add_blend_img(img, gt, 'gt_hm')
       debugger.add_img(img, img_id='out_pred')

@@ -42,6 +42,17 @@ class BaseTrainer(object):
           state[k] = v.to(device=device, non_blocking=True)
 
   def run_epoch(self, phase, epoch, data_loader):
+    """ Unified run epoch for train & evaluation
+
+    Arguments:
+        phase {str} -- 'train' or 'val'
+        epoch {int} -- epoch index
+        data_loader {object} -- data loader object
+
+    Returns:
+        ret [dict] -- 'time'
+        results [dict] -- test results?
+    """
     model_with_loss = self.model_with_loss
     
     if phase == 'train':
@@ -119,6 +130,7 @@ class BaseTrainer(object):
     bar.finish()
     ret = {k: v.avg for k, v in avg_loss_stats.items()}
     ret['time'] = bar.elapsed_td.total_seconds() / 60.
+    
     return ret, results
   
   def debug(self, batch, output, iter_id):

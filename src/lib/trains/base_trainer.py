@@ -73,7 +73,7 @@ class BaseTrainer(object):
     
     for iter_id, batch in enumerate(data_loader):
       
-      if iter_id >= num_iters:      # stop early for debug
+      if iter_id >= num_iters:      # ! stop early for debug purpose
         break
       
       data_time.update(time.time() - end)

@@ -439,14 +439,15 @@ class DLASeg(nn.Module):
     def __init__(self, base_name, heads, pretrained, down_ratio, final_kernel,
                  last_level, head_conv, out_channel=0):
         super(DLASeg, self).__init__()
-        assert down_ratio in [2, 4, 8, 16]
+
+        assert down_ratio in [2, 4, 8, 16]  # down_ratio must be power of 2
         self.first_level = int(np.log2(down_ratio))
         self.last_level = last_level
         
-        # build backbone net
+        # build backbone
         self.base = globals()[base_name](pretrained=pretrained)
         
-        # ! build decoder layers?
+        # build decoder
         channels = self.base.channels
         scales = [2 ** i for i in range(len(channels[self.first_level:]))]
         self.dla_up = DLAUp(
@@ -458,7 +459,7 @@ class DLASeg(nn.Module):
         self.ida_up = IDAUp(out_channel, channels[self.first_level:self.last_level],
                             [2 ** i for i in range(self.last_level - self.first_level)])
 
-        # construct FC layers to regress each head
+        # build heads
         self.heads = heads
         for head in self.heads:
             classes = self.heads[head]

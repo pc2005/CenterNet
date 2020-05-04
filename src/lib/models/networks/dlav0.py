@@ -534,13 +534,19 @@ class DLASeg(nn.Module):
     def __init__(self, base_name, heads,
                  pretrained=True, down_ratio=4, head_conv=256):
         super(DLASeg, self).__init__()
+        
         assert down_ratio in [2, 4, 8, 16]
         self.heads = heads
         self.first_level = int(np.log2(down_ratio))
+
+        # build backbone
         self.base = globals()[base_name](
           pretrained=pretrained, return_levels=True)
+
         channels = self.base.channels
         scales = [2 ** i for i in range(len(channels[self.first_level:]))]
+        
+        # build decoder
         self.dla_up = DLAUp(channels[self.first_level:], scales=scales)
         '''
         self.fc = nn.Sequential(
@@ -549,6 +555,7 @@ class DLASeg(nn.Module):
         )
         '''
 
+        # build heads
         for head in self.heads:
             classes = self.heads[head]
             if head_conv > 0:

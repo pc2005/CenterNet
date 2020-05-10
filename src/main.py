@@ -34,7 +34,7 @@ def main(opt):
   os.environ['CUDA_VISIBLE_DEVICES'] = opt.gpus_str
   opt.device = torch.device('cuda' if opt.gpus[0] >= 0 else 'cpu')
 
-  ## ! Create model (dig-in)
+  ### Create Model ###
   print('Creating model...')
   model = create_model(opt.arch, opt.heads, opt.head_conv)
   optimizer = torch.optim.Adam(model.parameters(), opt.lr)
@@ -43,7 +43,7 @@ def main(opt):
     model, optimizer, start_epoch = load_model(
         model, opt.load_model, optimizer, opt.resume, opt.lr, opt.lr_step)
 
-  ## ! Init trainer class (dig-in)
+  ### Init Trainer Class ###
   Trainer = train_factory[opt.task]
   trainer = Trainer(opt, model, optimizer)
   trainer.set_device(opt.gpus, opt.chunk_sizes, opt.device)

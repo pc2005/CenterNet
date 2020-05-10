@@ -69,6 +69,8 @@
                 "ctdet",
                 "--exp_id",
                 "coco_dla",
+                "--arch",
+                "dlav0_34",
                 "--batch_size",
                 "8",
                 "--master_batch",
@@ -77,10 +79,10 @@
                 "1.25e-4",
                 "--gpus",
                 "0",
-                "--debug",      // for debug
+                "--debug",
                 "2",
-                "--num_iters",  // for debug
-                "100"     
+                "--num_iters",
+                "100"
             ],
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}"
@@ -111,6 +113,13 @@
             ],
             "console": "integratedTerminal",
             "cwd": "${workspaceFolder}"
+        },
+        {
+            "name": "Docker Node.js Launch",
+            "type": "docker",
+            "request": "launch",
+            "preLaunchTask": "docker-run: debug",
+            "platform": "node"
         }
     ]
 }

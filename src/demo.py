@@ -46,12 +46,16 @@ def demo(opt):
     else:
       image_names = [opt.demo]
 
+    i = 0
     for (image_name) in image_names:
       ret = detector.run(image_name)
       time_str = ''
       for stat in time_stats:
         time_str = time_str + '{} {:.3f}s |'.format(stat, ret[stat])
       print(time_str)
+      
+      print('Frame: {:d}'.format(i))
+      i = i+1
 
 
 if __name__ == '__main__':

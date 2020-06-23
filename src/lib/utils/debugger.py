@@ -176,17 +176,31 @@ class Debugger(object):
     c = self.colors[cat][0][0].tolist()
     if self.theme == 'white':
       c = (255 - np.array(c)).tolist()
+    
+    # ! pc: hack
+    if cat == 2 or cat==7:
+      c[0] = 0
+      c[1] = 140
+      c[2] = 255
+    else:
+      c[0] = 0
+      c[1] = 0
+      c[2] = 255
+
     txt = '{}{:.1f}'.format(self.names[cat], conf)
     font = cv2.FONT_HERSHEY_SIMPLEX
     cat_size = cv2.getTextSize(txt, font, 0.5, 2)[0]
     cv2.rectangle(
       self.imgs[img_id], (bbox[0], bbox[1]), (bbox[2], bbox[3]), c, 2)
-    if show_txt:
-      cv2.rectangle(self.imgs[img_id],
-                    (bbox[0], bbox[1] - cat_size[1] - 2),
-                    (bbox[0] + cat_size[0], bbox[1] - 2), c, -1)
-      cv2.putText(self.imgs[img_id], txt, (bbox[0], bbox[1] - 2), 
-                  font, 0.5, (0, 0, 0), thickness=1, lineType=cv2.LINE_AA)
+    
+    #! pc:hack
+    # if show_txt:
+    #   cv2.rectangle(self.imgs[img_id],
+    #                 (bbox[0], bbox[1] - cat_size[1] - 2),
+    #                 (bbox[0] + cat_size[0], bbox[1] - 2), c, -1)
+    #   cv2.putText(self.imgs[img_id], txt, (bbox[0], bbox[1] - 2), 
+    #               font, 0.5, (0, 0, 0), thickness=2, lineType=cv2.LINE_AA)
+
 
   def add_coco_hp(self, points, img_id='default'): 
     points = np.array(points, dtype=np.int32).reshape(self.num_joints, 2)

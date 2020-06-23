@@ -19,7 +19,7 @@
             "args": [
                 "ctdet",
                 "--demo",
-                "/media/pc2005/Samsung_1TB1/data/valetpark/Rec20190328120637/FrontCamera",
+                "/media/pc2005/Samsung_1TB/data/valetpark/Rec20190328120637/FrontCamera",
                 "--load_model",
                 "./models/ctdet_coco_dla_2x.pth",
                 "--debug",
@@ -36,7 +36,7 @@
             "args": [
                 "ddd",
                 "--demo",
-                "/media/pc2005/Samsung_1TB1/data/kitti/3d_obj/testing/image_2",
+                "/media/pc2005/Samsung_1TB/data/kitti/3d_obj/testing/image_2",
                 "--load_model",
                 "./models/ddd_3dop.pth",
                 "--debug",

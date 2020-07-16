@@ -25,6 +25,8 @@ def main(opt):
 
   # init dataset object
   Dataset = get_dataset(opt.dataset, opt.task)
+
+  # update head setting according to task
   opt = opts().update_dataset_info_and_set_heads(opt, Dataset)
 
   # print and log all arguments
@@ -36,12 +38,19 @@ def main(opt):
 
   ### Create Model ###
   print('Creating model...')
+  
+  # init model
   model = create_model(opt.arch, opt.heads, opt.head_conv)
+  
+  # assign optimizer
   optimizer = torch.optim.Adam(model.parameters(), opt.lr)
-  start_epoch = 0
+
+  # load pretrained model
   if opt.load_model != '':
     model, optimizer, start_epoch = load_model(
         model, opt.load_model, optimizer, opt.resume, opt.lr, opt.lr_step)
+
+  start_epoch = 0
 
   ### Init Trainer ###
   Trainer = train_factory[opt.task]

@@ -14,12 +14,13 @@ from .networks.resnet_dcn import get_pose_net as get_pose_net_dcn
 from .networks.large_hourglass import get_large_hourglass_net
 
 _model_factory = {
-  'res': get_pose_net, # default Resnet with deconv
-  'dlav0': get_dlav0, # default DLAup
-  'dla': get_dla_dcn,
-  'resdcn': get_pose_net_dcn,
-  'hourglass': get_large_hourglass_net,
+    'res': get_pose_net,  # default Resnet with deconv
+    'dlav0': get_dlav0,  # default DLAup
+    'dla': get_dla_dcn,
+    'resdcn': get_pose_net_dcn,
+    'hourglass': get_large_hourglass_net,
 }
+
 
 def create_model(arch, heads, head_conv):
   num_layers = int(arch[arch.find('_') + 1:]) if '_' in arch else 0
@@ -28,14 +29,16 @@ def create_model(arch, heads, head_conv):
   model = get_model(num_layers=num_layers, heads=heads, head_conv=head_conv)
   return model
 
-def load_model(model, model_path, optimizer=None, resume=False, 
+
+def load_model(model, model_path, optimizer=None, resume=False,
                lr=None, lr_step=None):
   start_epoch = 0
-  checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
+  checkpoint = torch.load(
+      model_path, map_location=lambda storage, loc: storage)
   print('loaded {}, epoch {}'.format(model_path, checkpoint['epoch']))
   state_dict_ = checkpoint['state_dict']
   state_dict = {}
-  
+
   # convert data_parallal to model
   for k in state_dict_:
     if k.startswith('module') and not k.startswith('module_list'):
@@ -52,9 +55,9 @@ def load_model(model, model_path, optimizer=None, resume=False,
   for k in state_dict:
     if k in model_state_dict:
       if state_dict[k].shape != model_state_dict[k].shape:
-        print('Skip loading parameter {}, required shape{}, '\
+        print('Skip loading parameter {}, required shape{}, '
               'loaded shape{}. {}'.format(
-          k, model_state_dict[k].shape, state_dict[k].shape, msg))
+                  k, model_state_dict[k].shape, state_dict[k].shape, msg))
         state_dict[k] = model_state_dict[k]
     else:
       print('Drop parameter {}.'.format(k) + msg)
@@ -83,14 +86,21 @@ def load_model(model, model_path, optimizer=None, resume=False,
   else:
     return model
 
+
 def save_model(path, epoch, model, optimizer=None):
+  # get model state dict
   if isinstance(model, torch.nn.DataParallel):
     state_dict = model.module.state_dict()
   else:
     state_dict = model.state_dict()
+
+  # assemble with epoch index
   data = {'epoch': epoch,
           'state_dict': state_dict}
+
+  # get optimizer state dict
   if not (optimizer is None):
     data['optimizer'] = optimizer.state_dict()
-  torch.save(data, path)
 
+  # save model
+  torch.save(data, path)

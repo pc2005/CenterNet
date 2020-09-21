@@ -36,7 +36,7 @@
             "args": [
                 "ddd",
                 "--demo",
-                "/media/pc2005/Samsung_1TB/data/kitti/3d_obj/testing/image_2",
+                "/media/pc2005/Samsung_1TB/data/kitti/3d_obj/testing/vapa",
                 "--load_model",
                 "./models/ddd_3dop.pth",
                 "--debug",

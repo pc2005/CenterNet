@@ -90,6 +90,8 @@ class BaseDetector(object):
       image = image_or_path_or_tensor
     elif type(image_or_path_or_tensor) == type (''): 
       image = cv2.imread(image_or_path_or_tensor)
+      #! pc: manual crop to test vapa
+      image = image[0:600, :]
     else:
       image = image_or_path_or_tensor['image'][0].numpy()
       pre_processed_images = image_or_path_or_tensor
